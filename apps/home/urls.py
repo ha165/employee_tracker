@@ -10,7 +10,9 @@ urlpatterns = [
 
     # employee view
     path("employee/",views.employee,name='employee'),
-
+    
+    #add_user/employess
+     path('add-user/', views.add_user, name='add_user'),
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
