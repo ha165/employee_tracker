@@ -4,7 +4,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import Employee
-
+from .forms import UserCreationForm, EmloyeeCreationForm
+from django.contrib import messages
 @login_required(login_url="/login/")
 def index(request):
     # Render the 'home/index.html' template with context
@@ -32,6 +33,36 @@ def employee(request):
     }
     
     return render(request, 'home/tables.html', context)
+
+
+@login_required(login_url="/login/")
+def add_user(request):
+    if request.method == 'POST':
+        user_form = UserCreationForm(request.POST)
+        employee_form = EmloyeeCreationForm(request.POST)
+
+        if user_form.is_valid() and employee_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user.password)
+            user.save()
+
+            employee = employee_form.save(commit=False)
+            employee.user = user
+            employee.save()
+
+            messages.sucess(request,"User Added sucessfully")
+            return redirect('employee')
+        else:
+            messages.error(request,"There was an error in the form Submission")
+    else:
+        user_form = UserCreationForm()
+        employee_form = EmloyeeCreationForm()
+    context = {
+        'user_form':user_form,
+        'employee_form':employee_form
+    }
+    return render (request,'home/add_user.html',context)
+        
 
 
 @login_required(login_url="/login/")
