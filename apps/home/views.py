@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import Employee
-from .forms import UserCreationForm, EmloyeeCreationForm
+from .forms import UserCreationForm, EmployeeCreationForm
 from django.contrib import messages
 @login_required(login_url="/login/")
 def index(request):
@@ -39,7 +39,7 @@ def employee(request):
 def add_user(request):
     if request.method == 'POST':
         user_form = UserCreationForm(request.POST)
-        employee_form = EmloyeeCreationForm(request.POST)
+        employee_form = EmployeeCreationForm(request.POST)
 
         if user_form.is_valid() and employee_form.is_valid():
             user = user_form.save(commit=False)
@@ -56,7 +56,7 @@ def add_user(request):
             messages.error(request,"There was an error in the form Submission")
     else:
         user_form = UserCreationForm()
-        employee_form = EmloyeeCreationForm()
+        employee_form = EmployeeCreationForm()
     context = {
         'user_form':user_form,
         'employee_form':employee_form
