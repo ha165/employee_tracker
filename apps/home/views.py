@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import Employee, KPI
+from .models import Employee, KPI,ReviewCycle
 from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm
 from django.contrib import messages
 @login_required(login_url="/login/")
@@ -109,6 +109,41 @@ def add_kpi(request):
     }    
     return render(request, 'home/add_kpi.html', context)
 
+@login_required(login_url="/login/")
+def review_cycle(request):
+    # Retrieve all review cycles from the database
+    review_cycle_list = ReviewCycle.objects.all()
+    
+    paginator = Paginator(review_cycle_list, 10)  # Paginate with 10 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'review_cycles': page_obj,
+        'segment': 'review_cycle',  # Set segment for highlighting menu
+    }
+    
+    return render(request, 'home/review_cycle.html', context)
+
+
+@login_required(login_url="/login/")
+def add_review_cycle(request):
+    if request.method == 'POST':
+        review_cycle_form = ReviewCycleForm(request.POST)
+        if review_cycle_form.is_valid():
+            review_cycle = review_cycle_form.save(commit=False)
+            review_cycle.save()
+            messages.success(request, "Review Cycle successfully added.")
+            return redirect('review_cycle')
+        else:
+            messages.error(request, "Error in form submission. Please correct the errors.")
+    else:
+        review_cycle_form = ReviewCycleForm()
+
+    context = {
+        'review_cycle_form': review_cycle_form,
+    }    
+    return render(request, 'home/add_review_cycle.html', context)
 
 
 @login_required(login_url="/login/")
