@@ -16,7 +16,11 @@ urlpatterns = [
 
      path("kpi/",views.kpi,name='kpi'),
 
-      path('add-kpi/', views.add_kpi, name='add_kpi'),
+     path('kpi/add/', views.add_kpi, name='add_kpi'),
+
+      path('review-cycles/', views.review_cycle, name='review_cycle'),
+
+     path('review-cycles/add/', views.add_review_cycle, name='add_review_cycle'),
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
