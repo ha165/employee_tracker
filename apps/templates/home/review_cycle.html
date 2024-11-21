@@ -1,0 +1,81 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Review Cycle {% endblock %}
+
+<!-- Specific Page CSS goes HERE -->
+{% block stylesheets %}
+    <!-- Include any CSS for tables, pagination or other styles if needed -->
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Review Cycle</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <a href="{% url 'add_review_cycle' %}" class="btn btn-primary">Add Cycle</a>
+            <table class="table tablesorter" id="">
+              <thead class=" text-primary">
+                <tr>
+                  <th>Name</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Is Active</th>
+                  <th class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cycle in review_cycles %}
+                <tr>
+                  <td>{{ cycle.name }}</td>
+                  <td>{{ cycle.start_date }}</td>
+                  <td>{{ cycle.end_date }}</td>
+                  <td>{{ cycle.is_active|yesno:"Yes,No" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4">No Cycles found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination Controls -->
+          <div class="pagination">
+            <span class="step-links">
+              {% if review_cycles.has_previous %}
+              <!-- Link to the first page -->
+              <a href="?page=1">&laquo; First</a>
+              <!-- Link to the previous page -->
+              <a href="?page={{ review_cycles.previous_page_number }}">Previous</a>
+              {% endif %}
+
+              <!-- Display current page and total number of pages -->
+              <span class="current">
+                Page {{ review_cycles.number }} of {{ review_cycles.paginator.num_pages }}.
+              </span>
+
+              {% if employees.has_next %}
+              <!-- Link to the next page -->
+              <a href="?page={{ review_cycles.next_page_number }}">Next</a>
+              <!-- Link to the last page -->
+              <a href="?page={{ review_cycles.paginator.num_pages }}">Last &raquo;</a>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+    <!-- Include any JS for table sorting, pagination, or other functionalities -->
+{% endblock javascripts %}
