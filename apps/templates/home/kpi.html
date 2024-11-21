@@ -1,0 +1,80 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} KPI Tables {% endblock %}
+
+<!-- Specific Page CSS goes HERE -->
+{% block stylesheets %}
+    <!-- Include any CSS for tables, pagination or other styles if needed -->
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">KPI Table</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <a href="{% url 'add_kpi' %}" class="btn btn-primary">Add Kpi</a>
+            <table class="table tablesorter" id="">
+              <thead class=" text-primary">
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Target Value</th>
+                  <th class="text-center">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for kpi in kpis %}
+                <tr>
+                  <td>{{ kpi.name }}</td>
+                  <td>{{ kpi.description }}</td>
+                  <td>{{ kpi.target_value }}</td>
+                  <td class="text-center">{{kpi.unit }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4">No Kpi's found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination Controls -->
+          <div class="pagination">
+            <span class="step-links">
+              {% if kpis.has_previous %}
+              <!-- Link to the first page -->
+              <a href="?page=1">&laquo; First</a>
+              <!-- Link to the previous page -->
+              <a href="?page={{ kpis.previous_page_number }}">Previous</a>
+              {% endif %}
+
+              <!-- Display current page and total number of pages -->
+              <span class="current">
+                Page {{ kpis.number }} of {{ kpis.paginator.num_pages }}.
+              </span>
+
+              {% if kpis.has_next %}
+              <!-- Link to the next page -->
+              <a href="?page={{ kpis.next_page_number }}">Next</a>
+              <!-- Link to the last page -->
+              <a href="?page={{ kpis.paginator.num_pages }}">Last &raquo;</a>
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+    <!-- Include any JS for table sorting, pagination, or other functionalities -->
+{% endblock javascripts %}

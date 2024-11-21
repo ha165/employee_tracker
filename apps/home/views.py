@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import Employee
-from .forms import UserCreationForm, EmployeeCreationForm
+from .models import Employee, KPI
+from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm
 from django.contrib import messages
 @login_required(login_url="/login/")
 def index(request):
@@ -33,7 +33,6 @@ def employee(request):
     }
     
     return render(request, 'home/employee.html', context)
-
 
 @login_required(login_url="/login/")
 def add_user(request):
@@ -71,6 +70,44 @@ def add_user(request):
     }
     return render(request, 'home/add_user.html', context)
 
+
+
+@login_required(login_url="/login/")
+def kpi(request):
+    # Retrieve all employees from the database
+    kpi_list = KPI.objects.all()
+    
+    paginator = Paginator(kpi_list, 10)  
+    
+    page_number = request.GET.get('page')
+    
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'kpis': page_obj,
+        'segment': 'kpi',
+    }
+    
+    return render(request, 'home/kpi.html', context)
+
+@login_required(login_url="/login/")
+def add_kpi(request):
+    if request.method == 'POST':
+        kpi_form = KPICreationForm(request.POST)
+        if kpi_form.is_valid():
+            kpi = kpi_form.save(commit=False)
+            kpi.save()
+            messages.success(request, "KPI successfully added.")
+            return redirect('kpi')
+        else:
+            messages.error(request, "Error in form submission. Please correct the errors.")
+    else:
+        kpi_form = KPICreationForm()
+
+    context = {
+        'kpi_form': kpi_form,
+    }    
+    return render(request, 'home/add_kpi.html', context)
 
 
 @login_required(login_url="/login/")
