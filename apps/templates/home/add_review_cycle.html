@@ -1,0 +1,49 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Add New Review Cycle {% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Add New Review Cycle</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="name">Name</label>
+                  {{ review_cycle_form.name }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="start_date">Start Date</label>
+                  {{ review_cycle_form.start_date }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="end_date">End Date</label>
+                  {{ review_cycle_form.end_date }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="is_active">Is Active</label>
+                  {{ review_cycle_form.is_active }}
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Review Cycle</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
