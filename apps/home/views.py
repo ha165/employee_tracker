@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import Employee, KPI
-from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm
+from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm
 from django.contrib import messages
 @login_required(login_url="/login/")
 def index(request):
@@ -108,6 +108,7 @@ def add_kpi(request):
         'kpi_form': kpi_form,
     }    
     return render(request, 'home/add_kpi.html', context)
+
 
 
 @login_required(login_url="/login/")
