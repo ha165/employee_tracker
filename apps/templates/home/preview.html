@@ -1,0 +1,46 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Performance Reviews {% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Performance Reviews</h4>
+          <a href="{% url 'add_performance_review' %}" class="btn btn-primary float-right">Add Review</a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table tablesorter">
+              <thead class=" text-primary">
+                <tr>
+                  <th>Employee</th>
+                  <th>KPI</th>
+                  <th>Review Cycle</th>
+                  <th>Achieved Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for review in reviews %}
+                <tr>
+                  <td>{{ review.employee }}</td>
+                  <td>{{ review.kpi }}</td>
+                  <td>{{ review.review_cycle }}</td>
+                  <td>{{ review.achieved_value }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4">No reviews found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

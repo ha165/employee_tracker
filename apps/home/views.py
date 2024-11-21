@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import Employee, KPI,ReviewCycle
-from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm
+from .models import Employee, KPI,ReviewCycle,PerformanceReview
+from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm,PerformanceReviewForm
 from django.contrib import messages
 @login_required(login_url="/login/")
 def index(request):
@@ -144,6 +144,36 @@ def add_review_cycle(request):
         'review_cycle_form': review_cycle_form,
     }    
     return render(request, 'home/add_review_cycle.html', context)
+
+
+
+
+@login_required(login_url="/login/")
+def performance_reviews(request):
+    reviews = PerformanceReview.objects.select_related('employee', 'kpi', 'review_cycle').all()
+    context = {
+        'reviews': reviews
+    }
+    return render(request, 'home/preview.html', context)
+
+@login_required(login_url="/login/")
+def add_performance_review(request):
+    if request.method == 'POST':
+        form = PerformanceReviewForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Performance review added successfully.")
+            return redirect('performance_reviews')
+        else:
+            messages.error(request, "Error adding performance review.")
+    else:
+        form = PerformanceReviewForm()
+
+    context = {'form': form}
+    return render(request, 'home/add_preview.html', context)
+
+
+
 
 
 @login_required(login_url="/login/")

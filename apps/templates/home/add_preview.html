@@ -1,0 +1,49 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Add Performance Review {% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Add Performance Review</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="employee">Employee</label>
+                  {{ form.employee }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="kpi">KPI</label>
+                  {{ form.kpi }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="review_cycle">Review Cycle</label>
+                  {{ form.review_cycle }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="achieved_value">Achieved Value</label>
+                  {{ form.achieved_value }}
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Review</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

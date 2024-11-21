@@ -43,6 +43,12 @@
                         <p>Review Cycle</p>
                     </a>
                 </li>
+                <li class="{% if 'tables' in segment %} active {% endif %}">
+                    <a href="{% url 'performance_reviews' %}">
+                        <i class="tim-icons icon-puzzle-10"></i>
+                        <p>Perfomance Review</p>
+                    </a>
+                </li>
                 <li>
                     <a href="{% url 'login' %}">
                         <i class="tim-icons icon-button-power"></i>
