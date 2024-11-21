@@ -32,7 +32,7 @@ def employee(request):
         'segment': 'employee',  # Add 'employee' to segment context for active link
     }
     
-    return render(request, 'home/tables.html', context)
+    return render(request, 'home/employee.html', context)
 
 
 @login_required(login_url="/login/")

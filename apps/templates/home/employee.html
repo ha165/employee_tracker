@@ -33,7 +33,7 @@
                   <td>{{ employee.user.username }}</td>
                   <td>{{ employee.department }}</td>
                   <td>{{ employee.position }}</td>
-                  <td class="text-center">{{ employee.date_joined }}</td>
+                  <td class="text-center">{{employee.user.date_joined }}</td>
                 </tr>
                 {% empty %}
                 <tr>
