@@ -237,69 +237,61 @@ def kpi_completion_all_users(request):
 
 def employee_kpi_performance(request):
     # Initialize the result dictionary
-    result = defaultdict(lambda: defaultdict(list))
+    result = defaultdict(lambda: defaultdict(dict))
 
-    # Get all employees
-    employees = Employee.objects.all()
+    # Get all review cycles
+    review_cycles = ReviewCycle.objects.all().order_by('start_date')
 
-    # Loop through each employee and collect KPI performance data
-    for employee in employees:
-        # Get performance reviews for the employee
-        reviews = PerformanceReview.objects.filter(employee=employee)
+    # Get all performance reviews
+    reviews = PerformanceReview.objects.select_related('employee', 'kpi', 'review_cycle')
 
-        # Prepare the cycle labels (assuming they are the same for all employees)
-        cycle_labels = list(ReviewCycle.objects.all().values_list('name', flat=True))
+    # Aggregate performance data by KPI for each cycle
+    for cycle in review_cycles:
+        cycle_reviews = reviews.filter(review_cycle=cycle)
 
-        # Prepare the KPI performance data for the employee
-        for cycle in cycle_labels:
-            cycle_reviews = reviews.filter(review_cycle__name=cycle)
-            for review in cycle_reviews:
-                # Aggregate achieved_value by KPI for each cycle
-                result[employee.user.username][cycle].append({
-                    'kpi_name': review.kpi.name,
-                    'achieved_value': review.achieved_value,
-                    'target_value': review.kpi.target_value
-                })
+        # Group by KPI and calculate the average achieved value
+        kpi_data = (
+            cycle_reviews
+            .values('kpi__name')  # Group by KPI name
+            .annotate(avg_achieved=Avg('achieved_value'))  # Calculate the average achieved value
+        )
 
-    # Convert defaultdict to a regular dict before returning the response
+        # Populate the result with cycle labels and averaged KPI data
+        for kpi in kpi_data:
+            result[cycle.name][kpi['kpi__name']] = kpi['avg_achieved']
+
+    # Convert defaultdict to a regular dictionary
     result = dict(result)
 
     return JsonResponse(result)
 
 def employee_performance_trend(request):
-    result = {}
+    # Get all review cycles
+    review_cycles = ReviewCycle.objects.all().order_by('start_date')
+    cycle_labels = [cycle.name for cycle in review_cycles]  # Labels for x-axis (review cycle names)
 
-    # Get all employees
-    employees = Employee.objects.all()
+    # Prepare the data for the response
+    performance_data = {
+        'cycle_labels': cycle_labels,
+        'performance_trend': []
+    }
 
-    # Loop through each employee to get their performance trend
-    for employee in employees:
-        # Get all performance reviews for this employee
-        reviews = PerformanceReview.objects.filter(employee=employee).select_related('review_cycle')
+    # Get all performance reviews for all employees
+    reviews = PerformanceReview.objects.select_related('employee', 'review_cycle')
 
-        # Prepare the cycle labels (assuming cycles are ordered)
-        cycle_labels = list(ReviewCycle.objects.all().values_list('name', flat=True))
+    # Loop through each review cycle to calculate the average performance
+    for cycle in review_cycles:
+        # Filter reviews for the current cycle
+        cycle_reviews = reviews.filter(review_cycle=cycle)
 
-        # Prepare the trend data for the employee
-        performance_trend = []
-        for cycle in cycle_labels:
-            # Filter the reviews for the current cycle
-            cycle_reviews = reviews.filter(review_cycle__name=cycle)
-            if cycle_reviews.exists():
-                # Get the achieved_value for the most recent review in this cycle
-                performance_trend.append(cycle_reviews.first().achieved_value)
-            else:
-                # If no review exists for the cycle, append a default value (e.g., 0)
-                performance_trend.append(0)
+        if cycle_reviews.exists():
+            # Calculate the average achieved performance across all employees for this cycle
+            average_performance = cycle_reviews.aggregate(Avg('achieved_value'))['achieved_value__avg']
+            performance_data['performance_trend'].append(average_performance)
+        else:
+            performance_data['performance_trend'].append(0)  # No performance data for this cycle
 
-        # Store the data for this employee
-        result[employee.user.username] = {
-            'cycle_labels': cycle_labels,
-            'performance_trend': performance_trend
-        }
-
-    return JsonResponse(result)
-
+    return JsonResponse(performance_data)
 
 def kpi_performance_pie_chart(request):
     # Calculate the performance status of each employee

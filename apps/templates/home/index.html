@@ -14,8 +14,7 @@
                     <div class="card-header ">
                         <div class="row">
                             <div class="col-sm-6 text-left">
-                                <h5 class="card-category">Total Shipments</h5>
-                                <h2 class="card-title">Performance</h2>
+                                <h5 class="card-category">Average Perfomance of all Employess</h5>
                             </div>
                             <div class="col-sm-6">
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
@@ -35,8 +34,7 @@
             <div class="col-lg-4">
                 <div class="card card-chart">
                     <div class="card-header">
-                        <h5 class="card-category">Total Shipments</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-bell-55 text-primary"></i> 763,215</h3>
+                        <h5 class="card-category">KPI Completion rate</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
@@ -48,8 +46,7 @@
             <div class="col-lg-4">
                 <div class="card card-chart">
                     <div class="card-header">
-                        <h5 class="card-category">Daily Sales</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500kshs</h3>
+                        <h5 class="card-category">Employee Kpi Perfomance</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
@@ -61,8 +58,7 @@
             <div class="col-lg-4">
                 <div class="card card-chart">
                     <div class="card-header">
-                        <h5 class="card-category">Completed Tasks</h5>
-                        <h3 class="card-title"><i class="tim-icons icon-send text-success"></i> 12,100K</h3>
+                        <h5 class="card-category">KPI Perfomance</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
@@ -133,82 +129,89 @@
       
         // Fetch Employee KPI Performance data
         fetch('/api/employee-kpi-performance/')
-          .then(response => response.json())
-          .then(data => {
-            var cycleLabels = Object.keys(data[Object.keys(data)[0]]);  // Get review cycles
-            var datasets = [];
-      
-            // Loop through each employee and prepare a dataset for the chart
-            for (var username in data) {
-              var userData = data[username];
-              for (var cycle in userData) {
-                var kpiData = userData[cycle];
-                for (var i = 0; i < kpiData.length; i++) {
-                  var kpi = kpiData[i];
-                  datasets.push({
-                    label: `${username} - ${kpi.kpi_name}`,
-                    data: [kpi.achieved_value],
-                    backgroundColor: 'rgba(72,72,176,0.2)',
-                    borderColor: '#d048b6',
-                    borderWidth: 2,
-                  });
+    .then(response => response.json())
+    .then(data => {
+      // Prepare labels and datasets for the chart
+      var cycleLabels = Object.keys(data); // Review cycles (X-axis)
+      var kpiNames = [...new Set(Object.values(data).flatMap(Object.keys))]; // Unique KPI names
+      var datasets = [];
+
+      // Loop through each KPI and prepare a dataset
+      kpiNames.forEach((kpi, index) => {
+        var kpiData = cycleLabels.map(cycle => data[cycle][kpi] || 0); // Performance for each cycle
+
+        datasets.push({
+          label: kpi,
+          data: kpiData,
+          backgroundColor: `rgba(${72 + index * 20}, ${72 + index * 30}, 176, 0.6)`, // Dynamic colors
+          borderColor: `rgba(${72 + index * 20}, ${72 + index * 30}, 176, 1)`,
+          borderWidth: 1,
+        });
+      });
+
+      // Create the bar chart
+      var ctx = document.getElementById("CountryChart").getContext("2d");
+      var chartData = {
+        labels: cycleLabels, // X-axis labels (review cycles)
+        datasets: datasets   // KPI performance data
+      };
+
+      var myChart = new Chart(ctx, {
+        type: 'bar',  // Bar chart
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              stacked: true // Stack bars for easier comparison
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Average Performance'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return `${tooltipItem.dataset.label}: ${tooltipItem.raw.toFixed(2)}`;
                 }
               }
             }
+          }
+        }
+      });
+    })
+    .catch(error => console.error('Error fetching employee KPI performance data:', error));
       
-            // Create the bar chart for Employee KPI Performance
-            var ctx = document.getElementById("CountryChart").getContext("2d");
-            var chartData = {
-              labels: cycleLabels,  // X-axis labels (review cycles)
-              datasets: datasets    // KPI data for each employee
+          fetch('/api/employee-performance-trend/')
+          .then(response => response.json())
+          .then(data => {
+            var cycleLabels = data.cycle_labels;  // Get review cycles from the response
+            var performanceTrend = data.performance_trend;  // Get the average performance trend for all employees
+      
+            // Prepare the dataset for the chart (only one line)
+            var dataset = {
+              label: 'Average Performance',
+              data: performanceTrend,  // Use the averaged performance values
+              fill: false,  // Line chart with no fill under the line
+              borderColor: '#00c5dc',  // Line color
+              tension: 0.1,  // Controls the smoothness of the line
+              borderWidth: 2
             };
-      
-            var myChart = new Chart(ctx, {
-              type: 'bar',  // Bar chart
-              data: chartData,
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: true
-                  }
-                },
-                plugins: {
-                  legend: {
-                    position: 'top',
-                  }
-                }
-              }
-            });
-          })
-          .catch(error => console.error('Error fetching employee KPI performance data:', error));
-      
-        // Fetch Employee Performance Trend data
-        fetch('/api/employee-performance-trend/')
-          .then(response => response.json())
-          .then(data => {
-            var cycleLabels = data[Object.keys(data)[0]].cycle_labels;  // Get review cycles
-            var datasets = [];
-      
-            // Loop through each employee and prepare a dataset for the chart
-            for (var username in data) {
-              var userData = data[username];
-              datasets.push({
-                label: username,
-                data: userData.performance_trend,
-                fill: false,  // Line chart with no fill under the line
-                borderColor: '#00c5dc',  // Line color
-                tension: 0.1,  // Controls the smoothness of the line
-                borderWidth: 2
-              });
-            }
       
             // Create the line chart for Employee Performance Trend
             var ctx = document.getElementById("chartEPT").getContext("2d");
             var chartData = {
               labels: cycleLabels,  // X-axis labels (review cycles)
-              datasets: datasets    // Performance data for each employee
+              datasets: [dataset]    // Only one dataset for the average performance
             };
       
             var myChart = new Chart(ctx, {
@@ -219,12 +222,23 @@
                 maintainAspectRatio: false,
                 scales: {
                   y: {
-                    beginAtZero: true
+                    beginAtZero: true,  // Ensure the Y-axis starts at 0
+                    title: {
+                      display: true,
+                      text: 'Average Performance'
+                    }
                   }
                 },
                 plugins: {
                   legend: {
                     position: 'top',
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function(tooltipItem) {
+                        return 'Performance: ' + tooltipItem.raw.toFixed(2);  // Show average with 2 decimal places
+                      }
+                    }
                   }
                 }
               }
