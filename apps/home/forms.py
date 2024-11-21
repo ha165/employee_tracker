@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Employee, KPI # Import your Employee model
+from .models import Employee, KPI, ReviewCycle # Import your Employee model
 
 class UserCreationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -20,3 +20,14 @@ class KPICreationForm(forms.ModelForm):
     class Meta:
         model = KPI  # Make sure this is specified
         fields = ['name', 'description', 'target_value', 'unit']
+
+
+
+class ReviewCycleForm(forms.ModelForm):
+    class Meta:
+        model = ReviewCycle
+        fields = ['name', 'start_date', 'end_date', 'is_active']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
