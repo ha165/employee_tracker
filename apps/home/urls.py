@@ -25,6 +25,12 @@ urlpatterns = [
     path('performance-reviews/', views.performance_reviews, name='performance_reviews'),
 
     path('performance-reviews/add/', views.add_performance_review, name='add_performance_review'),
+
+    path('api/kpi-completion-all-users/', views.kpi_completion_all_users, name='kpi-completion-all-users'),
+
+    path('api/employee-kpi-performance/', views.employee_kpi_performance, name='employee-kpi-performance'),
+
+    path('api/employee-performance-trend/', views.employee_performance_trend, name='employee-performance-trend'),
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 

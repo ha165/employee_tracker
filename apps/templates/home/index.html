@@ -19,34 +19,13 @@
                             </div>
                             <div class="col-sm-6">
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
-                                    <label class="btn btn-sm btn-primary btn-simple active" id="0">
-                                        <input type="radio" name="options" checked>
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Accounts</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-single-02"></i>
-                    </span>
-                                    </label>
-                                    <label class="btn btn-sm btn-primary btn-simple" id="1">
-                                        <input type="radio" class="d-none d-sm-none" name="options">
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Purchases</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-gift-2"></i>
-                    </span>
-                                    </label>
-                                    <label class="btn btn-sm btn-primary btn-simple" id="2">
-                                        <input type="radio" class="d-none" name="options">
-                                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Sessions</span>
-                                        <span class="d-block d-sm-none">
-                        <i class="tim-icons icon-tap-02"></i>
-                    </span>
-                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="chart-area">
-                            <canvas id="chartBig1"></canvas>
+                            <canvas id="chartEPT"></canvas>
                         </div>
                     </div>
                 </div>
@@ -396,11 +375,159 @@
 {% block javascripts %}
 
 <script>
-    $(document).ready(function () {
-        // Javascript method's body can be found in assets/js/demos.js
-        demo.initDashboardPageCharts();
-
-    });
+    document.addEventListener("DOMContentLoaded", function () {
+        // Fetch KPI completion data for all users
+        fetch('/api/kpi-completion-all-users/')
+          .then(response => response.json())
+          .then(data => {
+            var cycleLabels = data[Object.keys(data)[0]].cycle_labels;  // Get review cycles
+            var datasets = [];
+      
+            // Loop through each user and prepare a dataset for the chart
+            for (var username in data) {
+              var userKpiTrend = data[username].kpi_trend;
+              datasets.push({
+                label: username,
+                fill: true,
+                backgroundColor: 'rgba(72,72,176,0.2)',
+                borderColor: '#d048b6',
+                borderWidth: 2,
+                pointBackgroundColor: '#d048b6',
+                pointRadius: 4,
+                data: userKpiTrend
+              });
+            }
+      
+            // Create the bar chart for KPI Comparison
+            var ctx = document.getElementById("chartLinePurple").getContext("2d");
+            var chartData = {
+              labels: cycleLabels,  // X-axis labels (review cycles)
+              datasets: datasets    // KPI data for each user
+            };
+      
+            var myChart = new Chart(ctx, {
+              type: 'bar',  // Change to bar chart
+              data: chartData,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                },
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  }
+                }
+              }
+            });
+          })
+          .catch(error => console.error('Error fetching KPI completion data:', error));
+      
+        // Fetch Employee KPI Performance data
+        fetch('/api/employee-kpi-performance/')
+          .then(response => response.json())
+          .then(data => {
+            var cycleLabels = Object.keys(data[Object.keys(data)[0]]);  // Get review cycles
+            var datasets = [];
+      
+            // Loop through each employee and prepare a dataset for the chart
+            for (var username in data) {
+              var userData = data[username];
+              for (var cycle in userData) {
+                var kpiData = userData[cycle];
+                for (var i = 0; i < kpiData.length; i++) {
+                  var kpi = kpiData[i];
+                  datasets.push({
+                    label: `${username} - ${kpi.kpi_name}`,
+                    data: [kpi.achieved_value],
+                    backgroundColor: 'rgba(72,72,176,0.2)',
+                    borderColor: '#d048b6',
+                    borderWidth: 2,
+                  });
+                }
+              }
+            }
+      
+            // Create the bar chart for Employee KPI Performance
+            var ctx = document.getElementById("CountryChart").getContext("2d");
+            var chartData = {
+              labels: cycleLabels,  // X-axis labels (review cycles)
+              datasets: datasets    // KPI data for each employee
+            };
+      
+            var myChart = new Chart(ctx, {
+              type: 'bar',  // Bar chart
+              data: chartData,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                },
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  }
+                }
+              }
+            });
+          })
+          .catch(error => console.error('Error fetching employee KPI performance data:', error));
+      
+        // Fetch Employee Performance Trend data
+        fetch('/api/employee-performance-trend/')
+          .then(response => response.json())
+          .then(data => {
+            var cycleLabels = data[Object.keys(data)[0]].cycle_labels;  // Get review cycles
+            var datasets = [];
+      
+            // Loop through each employee and prepare a dataset for the chart
+            for (var username in data) {
+              var userData = data[username];
+              datasets.push({
+                label: username,
+                data: userData.performance_trend,
+                fill: false,  // Line chart with no fill under the line
+                borderColor: '#00c5dc',  // Line color
+                tension: 0.1,  // Controls the smoothness of the line
+                borderWidth: 2
+              });
+            }
+      
+            // Create the line chart for Employee Performance Trend
+            var ctx = document.getElementById("chartEPT").getContext("2d");
+            var chartData = {
+              labels: cycleLabels,  // X-axis labels (review cycles)
+              datasets: datasets    // Performance data for each employee
+            };
+      
+            var myChart = new Chart(ctx, {
+              type: 'line',  // Line chart
+              data: chartData,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true
+                  }
+                },
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  }
+                }
+              }
+            });
+          })
+          .catch(error => console.error('Error fetching employee performance trend data:', error));
+      });
+      
 </script>
 
 {% endblock javascripts %}

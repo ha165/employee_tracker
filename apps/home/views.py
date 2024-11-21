@@ -1,11 +1,14 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from collections import defaultdict
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import Employee, KPI,ReviewCycle,PerformanceReview
+from .models import Employee, KPI,ReviewCycle,PerformanceReview,User
 from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm,PerformanceReviewForm
 from django.contrib import messages
+from django.db.models import Avg
 @login_required(login_url="/login/")
 def index(request):
     # Render the 'home/index.html' template with context
@@ -197,3 +200,101 @@ def pages(request):
     except Exception:
         # Return 500 page for any other errors
         return render(request, 'home/page-500.html', context)
+    
+
+def kpi_completion_all_users(request):
+    # Initialize the result dictionary
+    result = {}
+
+    # Get all employees
+    employees = Employee.objects.all()
+
+    # Loop through each employee and collect KPI completion data
+    for employee in employees:
+        # Get performance reviews for the employee
+        reviews = PerformanceReview.objects.filter(employee=employee)
+        
+        # Prepare the cycle labels (assuming they are the same for all employees)
+        cycle_labels = list(ReviewCycle.objects.all().values_list('name', flat=True))
+
+        # Prepare the KPI trend data for the employee
+        kpi_trend = []
+        for cycle in cycle_labels:
+            cycle_reviews = reviews.filter(review_cycle__name=cycle)
+            for review in cycle_reviews:
+                kpi_trend.append(review.achieved_value)  # KPI completion value for that cycle
+
+        # Add the employee's data to the result
+        result[employee.user.username] = {
+            'cycle_labels': cycle_labels,
+            'kpi_trend': kpi_trend
+        }
+
+    # Return the result as JSON
+    return JsonResponse(result)
+
+
+def employee_kpi_performance(request):
+    # Initialize the result dictionary
+    result = defaultdict(lambda: defaultdict(list))
+
+    # Get all employees
+    employees = Employee.objects.all()
+
+    # Loop through each employee and collect KPI performance data
+    for employee in employees:
+        # Get performance reviews for the employee
+        reviews = PerformanceReview.objects.filter(employee=employee)
+
+        # Prepare the cycle labels (assuming they are the same for all employees)
+        cycle_labels = list(ReviewCycle.objects.all().values_list('name', flat=True))
+
+        # Prepare the KPI performance data for the employee
+        for cycle in cycle_labels:
+            cycle_reviews = reviews.filter(review_cycle__name=cycle)
+            for review in cycle_reviews:
+                # Aggregate achieved_value by KPI for each cycle
+                result[employee.user.username][cycle].append({
+                    'kpi_name': review.kpi.name,
+                    'achieved_value': review.achieved_value,
+                    'target_value': review.kpi.target_value
+                })
+
+    # Convert defaultdict to a regular dict before returning the response
+    result = dict(result)
+
+    return JsonResponse(result)
+
+def employee_performance_trend(request):
+    result = {}
+
+    # Get all employees
+    employees = Employee.objects.all()
+
+    # Loop through each employee to get their performance trend
+    for employee in employees:
+        # Get all performance reviews for this employee
+        reviews = PerformanceReview.objects.filter(employee=employee).select_related('review_cycle')
+
+        # Prepare the cycle labels (assuming cycles are ordered)
+        cycle_labels = list(ReviewCycle.objects.all().values_list('name', flat=True))
+
+        # Prepare the trend data for the employee
+        performance_trend = []
+        for cycle in cycle_labels:
+            # Filter the reviews for the current cycle
+            cycle_reviews = reviews.filter(review_cycle__name=cycle)
+            if cycle_reviews.exists():
+                # Get the achieved_value for the most recent review in this cycle
+                performance_trend.append(cycle_reviews.first().achieved_value)
+            else:
+                # If no review exists for the cycle, append a default value (e.g., 0)
+                performance_trend.append(0)
+
+        # Store the data for this employee
+        result[employee.user.username] = {
+            'cycle_labels': cycle_labels,
+            'performance_trend': performance_trend
+        }
+
+    return JsonResponse(result)
