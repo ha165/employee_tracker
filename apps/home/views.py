@@ -42,27 +42,35 @@ def add_user(request):
         employee_form = EmployeeCreationForm(request.POST)
 
         if user_form.is_valid() and employee_form.is_valid():
+            # Save user
             user = user_form.save(commit=False)
             user.set_password(user.password)
             user.save()
+            print("User saved:", user.username)
 
+            # Save employee
             employee = employee_form.save(commit=False)
             employee.user = user
             employee.save()
+            print("Employee saved:", employee)
 
-            messages.sucess(request,"User Added sucessfully")
+            messages.success(request, "User and Employee successfully added.")
             return redirect('employee')
         else:
-            messages.error(request,"There was an error in the form Submission")
+            print("User form errors:", user_form.errors)
+            print("Employee form errors:", employee_form.errors)
+            messages.error(request, "Error in form submission. Please correct the errors.")
+
     else:
         user_form = UserCreationForm()
         employee_form = EmployeeCreationForm()
+
     context = {
-        'user_form':user_form,
-        'employee_form':employee_form
+        'user_form': user_form,
+        'employee_form': employee_form,
     }
-    return render (request,'home/add_user.html',context)
-        
+    return render(request, 'home/add_user.html', context)
+
 
 
 @login_required(login_url="/login/")

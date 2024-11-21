@@ -13,4 +13,4 @@ class UserCreationForm(forms.ModelForm):
 class EmployeeCreationForm(forms.ModelForm):
     class Meta:
         model = Employee  # Make sure this is specified
-        fields = ['department', 'position', 'user']  # Adjust fields if needed
+        fields = ['department', 'position',]  # Adjust fields if needed

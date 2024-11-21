@@ -6,7 +6,6 @@ class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)  # Connect to Django's user model
     department = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
-    date_joined = models.DateField()
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
