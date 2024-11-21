@@ -31,6 +31,8 @@ urlpatterns = [
     path('api/employee-kpi-performance/', views.employee_kpi_performance, name='employee-kpi-performance'),
 
     path('api/employee-performance-trend/', views.employee_performance_trend, name='employee-performance-trend'),
+
+    path('api/kpi-performance-pie-chart/', views.kpi_performance_pie_chart, name='kpi-performance-pie-chart'),
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 

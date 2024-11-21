@@ -6,9 +6,10 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import Employee, KPI,ReviewCycle,PerformanceReview,User
+from .utils import calculate_all_kpi_performance
 from .forms import UserCreationForm, EmployeeCreationForm, KPICreationForm, ReviewCycleForm,PerformanceReviewForm
 from django.contrib import messages
-from django.db.models import Avg
+from django.db.models import Avg,F
 @login_required(login_url="/login/")
 def index(request):
     # Render the 'home/index.html' template with context
@@ -298,3 +299,29 @@ def employee_performance_trend(request):
         }
 
     return JsonResponse(result)
+
+
+def kpi_performance_pie_chart(request):
+    # Calculate the performance status of each employee
+    exceeded = 0
+    met = 0
+    underperformed = 0
+
+    # Iterate over each performance review to categorize by performance
+    for review in PerformanceReview.objects.all():
+        kpi = review.kpi
+        if review.achieved_value > kpi.target_value:
+            exceeded += 1
+        elif review.achieved_value == kpi.target_value:
+            met += 1
+        else:
+            underperformed += 1
+
+    # Prepare the response data
+    data = {
+        'exceeded': exceeded,
+        'met': met,
+        'underperformed': underperformed,
+    }
+
+    return JsonResponse(data)
