@@ -14,6 +14,8 @@ urlpatterns = [
     #add_user/employess
     path('add-user/', views.add_user, name='add_user'),
 
+    path('update-profile/', views.update_profile, name='update_profile'),
+
     path("kpi/",views.kpi,name='kpi'),
 
     path('kpi/add/', views.add_kpi, name='add_kpi'),

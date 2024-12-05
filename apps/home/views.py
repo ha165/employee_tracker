@@ -177,7 +177,29 @@ def add_performance_review(request):
     return render(request, 'home/add_preview.html', context)
 
 
+@login_required
+def profile_view(request):
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        employee = None  # Handle case where Employee does not exist
 
+    return render(request, 'user.html', {'employee': employee})
+
+@login_required
+def update_profile(request):
+    # Ensure an Employee instance exists for the logged-in user
+    employee, created = Employee.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = EmployeeCreationForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to a profile view or any other page
+    else:
+        form = EmployeeCreationForm(instance=employee)  # Prefill the form with the user's data
+
+    return render(request, 'user.html', {'form': form})
 
 
 @login_required(login_url="/login/")
